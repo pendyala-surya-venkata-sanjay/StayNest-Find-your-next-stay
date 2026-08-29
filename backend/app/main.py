@@ -1,12 +1,14 @@
 import os
 import sys
-# Allow resolving absolute import namespaces in nested folder layouts
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# Support importing 'app' when running from the repository root
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.app.database import engine, Base
-from backend.app.routers import auth, listings, bookings, host, wishlist
+from app.database import engine, Base
+from app.routers import auth, listings, bookings, host, wishlist
 
 # Initialize database tables on application startup
 Base.metadata.create_all(bind=engine)

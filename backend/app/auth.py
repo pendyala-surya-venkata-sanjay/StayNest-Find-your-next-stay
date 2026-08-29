@@ -7,8 +7,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from backend.app.database import get_db
-from backend.app.models import User
+from app.database import get_db
+from app.models import User
 
 # Configuration loaded from environment variables
 SECRET_KEY = os.getenv("JWT_SECRET", "airbnb-clone-super-secret-key-382910")

@@ -4,10 +4,10 @@ from sqlalchemy.orm import Session
 from datetime import date
 from typing import List
 
-from backend.app.database import get_db
-from backend.app.models import Booking, Listing, User
-from backend.app.schemas import BookingCreate, BookingResponse
-from backend.app.auth import get_current_guest, get_current_user
+from app.database import get_db
+from app.models import Booking, Listing, User
+from app.schemas import BookingCreate, BookingResponse
+from app.auth import get_current_guest, get_current_user
 
 router = APIRouter(prefix="/api/bookings", tags=["Bookings"])
 

@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend.app.database import get_db
-from backend.app.models import Listing, Booking, User
-from backend.app.schemas import ListingResponse, BookingResponse
-from backend.app.auth import get_current_host
+from app.database import get_db
+from app.models import Listing, Booking, User
+from app.schemas import ListingResponse, BookingResponse
+from app.auth import get_current_host
 
 router = APIRouter(prefix="/api/host", tags=["Host Dashboard"])
 

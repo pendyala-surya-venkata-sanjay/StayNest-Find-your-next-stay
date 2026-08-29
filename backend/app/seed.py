@@ -3,12 +3,13 @@ import os
 import bcrypt
 from datetime import date, datetime
 
-# Add workspace root directory to sys.path to allow imports
-workspace_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(workspace_root)
+# Support importing 'app' when running directly
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
 
-from backend.app.database import engine, Base, SessionLocal
-from backend.app.models import User, Listing, ListingImage, Amenity, Booking, Review, Wishlist
+from app.database import engine, Base, SessionLocal
+from app.models import User, Listing, ListingImage, Amenity, Booking, Review, Wishlist
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()

@@ -5,10 +5,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from backend.app.main import app
-from backend.app.database import Base, get_db
-from backend.app import models
-from backend.app.auth import create_access_token, hash_password
+import os
+import sys
+# Support importing 'app' during testing
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if backend_dir not in sys.path:
+    sys.path.append(backend_dir)
+
+from app.main import app
+from app.database import Base, get_db
+from app import models
+from app.auth import create_access_token, hash_password
 
 # Setup an isolated test database
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

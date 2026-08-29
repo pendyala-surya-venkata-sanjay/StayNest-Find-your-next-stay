@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Float, Text, Date, DateTime, ForeignKey, UniqueConstraint, Table, Boolean, CheckConstraint
 from sqlalchemy.orm import relationship
-from backend.app.database import Base
+from app.database import Base
 
 # Association Table for Many-to-Many relationship between Listings and Amenities
 listing_amenities = Table(
