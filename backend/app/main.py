@@ -1,4 +1,8 @@
 import os
+import sys
+# Allow resolving absolute import namespaces in nested folder layouts
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.database import engine, Base

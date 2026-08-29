@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Environments
+.env
+.env.*
+.vercel
+
+# Logs and diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Git
+.git
+.gitignore

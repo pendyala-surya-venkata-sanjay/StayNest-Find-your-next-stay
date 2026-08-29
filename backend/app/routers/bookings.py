@@ -18,8 +18,9 @@ def create_booking(
     current_guest: User = Depends(get_current_guest),
     db: Session = Depends(get_db)
 ):
-    # Acquire a write lock by beginning a transaction immediately (concurrency-safe)
-    db.execute(text("BEGIN IMMEDIATE"))
+    # Acquire a write lock by beginning a transaction immediately (concurrency-safe for SQLite)
+    if db.bind.dialect.name == "sqlite":
+        db.execute(text("BEGIN IMMEDIATE"))
     
     try:
         # 1. Verify listing exists and is active

@@ -1,0 +1,27 @@
+# Environments
+.env
+.env.*
+venv/
+.venv/
+env/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Tests and logs
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Git
+.git
+.gitignore
