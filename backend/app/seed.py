@@ -17,9 +17,8 @@ def hash_password(password: str) -> str:
     return hashed.decode('utf-8')
 
 def seed_database():
-    print("Resetting database tables...")
-    # Drop and recreate tables for clean idempotency
-    Base.metadata.drop_all(bind=engine)
+    print("Ensuring database tables exist...")
+    # Safe non-destructive creation (creates tables only if they do not already exist)
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
@@ -28,53 +27,31 @@ def seed_database():
         # Hash common password once for performance
         hashed_pw = hash_password("password123")
         
+        def get_or_create_user(name, email, role, avatar_url):
+            existing = db.query(User).filter(User.email == email).first()
+            if existing:
+                return existing
+            user = User(
+                name=name,
+                email=email,
+                hashed_password=hashed_pw,
+                role=role,
+                avatar_url=avatar_url
+            )
+            db.add(user)
+            db.flush()
+            return user
+        
         # 3 Hosts
-        host_sarah = User(
-            name="Sarah Jenkins",
-            email="sarah@host.com",
-            hashed_password=hashed_pw,
-            role="host",
-            avatar_url="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
-        )
-        host_michael = User(
-            name="Michael Chen",
-            email="michael@host.com",
-            hashed_password=hashed_pw,
-            role="host",
-            avatar_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-        )
-        host_elena = User(
-            name="Elena Rostova",
-            email="elena@host.com",
-            hashed_password=hashed_pw,
-            role="host",
-            avatar_url="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150"
-        )
+        host_sarah = get_or_create_user("Sarah Jenkins", "sarah@host.com", "host", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150")
+        host_michael = get_or_create_user("Michael Chen", "michael@host.com", "host", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150")
+        host_elena = get_or_create_user("Elena Rostova", "elena@host.com", "host", "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150")
         
         # 3 Guests
-        guest_john = User(
-            name="John Doe",
-            email="john@guest.com",
-            hashed_password=hashed_pw,
-            role="guest",
-            avatar_url="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
-        )
-        guest_emily = User(
-            name="Emily Watson",
-            email="emily@guest.com",
-            hashed_password=hashed_pw,
-            role="guest",
-            avatar_url="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150"
-        )
-        guest_carlos = User(
-            name="Carlos Santana",
-            email="carlos@guest.com",
-            hashed_password=hashed_pw,
-            role="guest",
-            avatar_url="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
-        )
+        guest_john = get_or_create_user("John Doe", "john@guest.com", "guest", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150")
+        guest_emily = get_or_create_user("Emily Watson", "emily@guest.com", "guest", "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150")
+        guest_carlos = get_or_create_user("Carlos Santana", "carlos@guest.com", "guest", "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150")
         
-        db.add_all([host_sarah, host_michael, host_elena, guest_john, guest_emily, guest_carlos])
         db.commit()
 
         print("Seeding Amenities...")
@@ -85,9 +62,14 @@ def seed_database():
         ]
         amenities = {}
         for name in amenity_names:
-            am = Amenity(name=name)
-            db.add(am)
-            amenities[name] = am
+            existing = db.query(Amenity).filter(Amenity.name == name).first()
+            if existing:
+                amenities[name] = existing
+            else:
+                am = Amenity(name=name)
+                db.add(am)
+                db.flush()
+                amenities[name] = am
         db.commit()
 
         print("Seeding Listings...")
@@ -635,161 +617,164 @@ def seed_database():
 
         created_listings = []
         for index, item in enumerate(listings_data):
-            listing = Listing(
-                host_id=item["host_id"],
-                title=item["title"],
-                description=item["description"],
-                category=item["category"],
-                price_per_night=item["price_per_night"],
-                location_city=item["location_city"],
-                location_country=item["location_country"],
-                guests_count=item["guests_count"],
-                bedrooms_count=item["bedrooms_count"],
-                bathrooms_count=item["bathrooms_count"],
-                latitude=item["latitude"],
-                longitude=item["longitude"],
-                is_active=True
-            )
-            # Link amenities
-            for am_name in item["amenities"]:
-                if am_name in amenities:
-                    listing.amenities.append(amenities[am_name])
-            
-            db.add(listing)
-            db.flush()  # Generate listing ID
+            existing_listing = db.query(Listing).filter(Listing.title == item["title"]).first()
+            if existing_listing:
+                created_listings.append(existing_listing)
+            else:
+                listing = Listing(
+                    host_id=item["host_id"],
+                    title=item["title"],
+                    description=item["description"],
+                    category=item["category"],
+                    price_per_night=item["price_per_night"],
+                    location_city=item["location_city"],
+                    location_country=item["location_country"],
+                    guests_count=item["guests_count"],
+                    bedrooms_count=item["bedrooms_count"],
+                    bathrooms_count=item["bathrooms_count"],
+                    latitude=item["latitude"],
+                    longitude=item["longitude"],
+                    is_active=True
+                )
+                # Link amenities
+                for am_name in item["amenities"]:
+                    if am_name in amenities and amenities[am_name] not in listing.amenities:
+                        listing.amenities.append(amenities[am_name])
+                
+                db.add(listing)
+                db.flush()  # Generate listing ID
 
-            # Create listing images
-            for img_url in item["images"]:
-                image = ListingImage(listing_id=listing.id, image_url=img_url)
-                db.add(image)
+                # Create listing images
+                for img_url in item["images"]:
+                    image = ListingImage(listing_id=listing.id, image_url=img_url)
+                    db.add(image)
 
-            created_listings.append(listing)
+                created_listings.append(listing)
         
         db.commit()
 
         print("Seeding Bookings (Non-Overlapping)...")
-        # Let's seed bookings on the first listing (Malibu beach villa, ID: created_listings[0].id)
-        # Booking 1: Confirmed
-        booking1 = Booking(
-            listing_id=created_listings[0].id,
-            guest_id=guest_john.id,
-            check_in=date(2026, 9, 1),
-            check_out=date(2026, 9, 5),
-            guests_count=2,
-            nightly_price=created_listings[0].price_per_night,
-            number_of_nights=4,
-            cleaning_fee=created_listings[0].price_per_night * 4 * 0.15,
-            service_fee=created_listings[0].price_per_night * 4 * 0.10,
-            total_price=created_listings[0].price_per_night * 4 * 1.25,
-            status="confirmed"
-        )
-        # Booking 2: Confirmed (Adjacent/Non-overlapping on same listing)
-        booking2 = Booking(
-            listing_id=created_listings[0].id,
-            guest_id=guest_emily.id,
-            check_in=date(2026, 9, 5),
-            check_out=date(2026, 9, 10),
-            guests_count=4,
-            nightly_price=created_listings[0].price_per_night,
-            number_of_nights=5,
-            cleaning_fee=created_listings[0].price_per_night * 5 * 0.15,
-            service_fee=created_listings[0].price_per_night * 5 * 0.10,
-            total_price=created_listings[0].price_per_night * 5 * 1.25,
-            status="confirmed"
-        )
-        # Booking 3: Cancelled (Overlap with booking 2, but allowed because status is cancelled)
-        booking3 = Booking(
-            listing_id=created_listings[0].id,
-            guest_id=guest_carlos.id,
-            check_in=date(2026, 9, 7),
-            check_out=date(2026, 9, 12),
-            guests_count=1,
-            nightly_price=created_listings[0].price_per_night,
-            number_of_nights=5,
-            cleaning_fee=created_listings[0].price_per_night * 5 * 0.15,
-            service_fee=created_listings[0].price_per_night * 5 * 0.10,
-            total_price=created_listings[0].price_per_night * 5 * 1.25,
-            status="cancelled"
-        )
-        
-        # Bookings on other listings
-        # Booking on Aspen Cabin
-        booking4 = Booking(
-            listing_id=created_listings[1].id,
-            guest_id=guest_john.id,
-            check_in=date(2026, 12, 20),
-            check_out=date(2026, 12, 27),
-            guests_count=2,
-            nightly_price=created_listings[1].price_per_night,
-            number_of_nights=7,
-            cleaning_fee=created_listings[1].price_per_night * 7 * 0.15,
-            service_fee=created_listings[1].price_per_night * 7 * 0.10,
-            total_price=created_listings[1].price_per_night * 7 * 1.25,
-            status="confirmed"
-        )
-        
-        # Booking on Florence Loft
-        booking5 = Booking(
-            listing_id=created_listings[2].id,
-            guest_id=guest_emily.id,
-            check_in=date(2026, 10, 5),
-            check_out=date(2026, 10, 12),
-            guests_count=2,
-            nightly_price=created_listings[2].price_per_night,
-            number_of_nights=7,
-            cleaning_fee=created_listings[2].price_per_night * 7 * 0.15,
-            service_fee=created_listings[2].price_per_night * 7 * 0.10,
-            total_price=created_listings[2].price_per_night * 7 * 1.25,
-            status="confirmed"
-        )
-        
-        # Booking on Copacabana Penthouse
-        booking6 = Booking(
-            listing_id=created_listings[11].id,
-            guest_id=guest_carlos.id,
-            check_in=date(2026, 11, 1),
-            check_out=date(2026, 11, 5),
-            guests_count=3,
-            nightly_price=created_listings[11].price_per_night,
-            number_of_nights=4,
-            cleaning_fee=created_listings[11].price_per_night * 4 * 0.15,
-            service_fee=created_listings[11].price_per_night * 4 * 0.10,
-            total_price=created_listings[11].price_per_night * 4 * 1.25,
-            status="confirmed"
-        )
+        raw_bookings_data = [
+            # Booking 1: Confirmed on Malibu Villa
+            {
+                "listing_id": created_listings[0].id,
+                "guest_id": guest_john.id,
+                "check_in": date(2026, 9, 1),
+                "check_out": date(2026, 9, 5),
+                "guests_count": 2,
+                "nightly_price": created_listings[0].price_per_night,
+                "number_of_nights": 4,
+                "cleaning_fee": created_listings[0].price_per_night * 4 * 0.15,
+                "service_fee": created_listings[0].price_per_night * 4 * 0.10,
+                "total_price": created_listings[0].price_per_night * 4 * 1.25,
+                "status": "confirmed"
+            },
+            # Booking 2: Confirmed (Adjacent/Non-overlapping on same listing)
+            {
+                "listing_id": created_listings[0].id,
+                "guest_id": guest_emily.id,
+                "check_in": date(2026, 9, 5),
+                "check_out": date(2026, 9, 10),
+                "guests_count": 4,
+                "nightly_price": created_listings[0].price_per_night,
+                "number_of_nights": 5,
+                "cleaning_fee": created_listings[0].price_per_night * 5 * 0.15,
+                "service_fee": created_listings[0].price_per_night * 5 * 0.10,
+                "total_price": created_listings[0].price_per_night * 5 * 1.25,
+                "status": "confirmed"
+            },
+            # Booking 3: Cancelled (Overlap with booking 2, allowed because status is cancelled)
+            {
+                "listing_id": created_listings[0].id,
+                "guest_id": guest_carlos.id,
+                "check_in": date(2026, 9, 7),
+                "check_out": date(2026, 9, 12),
+                "guests_count": 1,
+                "nightly_price": created_listings[0].price_per_night,
+                "number_of_nights": 5,
+                "cleaning_fee": created_listings[0].price_per_night * 5 * 0.15,
+                "service_fee": created_listings[0].price_per_night * 5 * 0.10,
+                "total_price": created_listings[0].price_per_night * 5 * 1.25,
+                "status": "cancelled"
+            },
+            # Booking 4 on Aspen Cabin
+            {
+                "listing_id": created_listings[1].id,
+                "guest_id": guest_john.id,
+                "check_in": date(2026, 12, 20),
+                "check_out": date(2026, 12, 27),
+                "guests_count": 2,
+                "nightly_price": created_listings[1].price_per_night,
+                "number_of_nights": 7,
+                "cleaning_fee": created_listings[1].price_per_night * 7 * 0.15,
+                "service_fee": created_listings[1].price_per_night * 7 * 0.10,
+                "total_price": created_listings[1].price_per_night * 7 * 1.25,
+                "status": "confirmed"
+            },
+            # Booking 5 on Florence Loft
+            {
+                "listing_id": created_listings[2].id,
+                "guest_id": guest_emily.id,
+                "check_in": date(2026, 10, 5),
+                "check_out": date(2026, 10, 12),
+                "guests_count": 2,
+                "nightly_price": created_listings[2].price_per_night,
+                "number_of_nights": 7,
+                "cleaning_fee": created_listings[2].price_per_night * 7 * 0.15,
+                "service_fee": created_listings[2].price_per_night * 7 * 0.10,
+                "total_price": created_listings[2].price_per_night * 7 * 1.25,
+                "status": "confirmed"
+            },
+            # Booking 6 on Copacabana Penthouse
+            {
+                "listing_id": created_listings[11].id,
+                "guest_id": guest_carlos.id,
+                "check_in": date(2026, 11, 1),
+                "check_out": date(2026, 11, 5),
+                "guests_count": 3,
+                "nightly_price": created_listings[11].price_per_night,
+                "number_of_nights": 4,
+                "cleaning_fee": created_listings[11].price_per_night * 4 * 0.15,
+                "service_fee": created_listings[11].price_per_night * 4 * 0.10,
+                "total_price": created_listings[11].price_per_night * 4 * 1.25,
+                "status": "confirmed"
+            }
+        ]
 
-        db.add_all([booking1, booking2, booking3, booking4, booking5, booking6])
+        for b_item in raw_bookings_data:
+            existing_b = db.query(Booking).filter(
+                Booking.listing_id == b_item["listing_id"],
+                Booking.guest_id == b_item["guest_id"],
+                Booking.check_in == b_item["check_in"],
+                Booking.check_out == b_item["check_out"],
+                Booking.status == b_item["status"]
+            ).first()
+            if not existing_b:
+                booking = Booking(**b_item)
+                db.add(booking)
         db.commit()
 
         print("Seeding Reviews...")
-        # Create multiple reviews on listings from different guests
         reviews_data = [
-            # Reviews on Malibu Villa
             {"listing_id": created_listings[0].id, "guest_id": guest_john.id, "rating": 5, "comment": "Absolutely spectacular view! The sound of the waves woke us up in paradise. Sarah is an excellent host."},
             {"listing_id": created_listings[0].id, "guest_id": guest_emily.id, "rating": 5, "comment": "Perfect location! The house has everything you need and matches the photos exactly. 10/10 recommendation."},
-            
-            # Review on Aspen Cabin
             {"listing_id": created_listings[1].id, "guest_id": guest_emily.id, "rating": 4, "comment": "Very cozy cabin, perfect after a day of snowboarding. Fireplace was wonderful. Only issue was a bit of ice on the stairs, but the host cleaned it immediately."},
-            
-            # Review on Florence Loft
             {"listing_id": created_listings[2].id, "guest_id": guest_carlos.id, "rating": 5, "comment": "Walking out the door and seeing the Duomo right there is unmatched. Beautiful frescos. Clean and comfortable."},
-            
-            # Review on Copacabana Penthouse
             {"listing_id": created_listings[11].id, "guest_id": guest_john.id, "rating": 5, "comment": "Rio has never looked better. Pool terrace was perfect for barbecues. Highly recommend!"}
         ]
         
         for rev_item in reviews_data:
-            review = Review(
-                listing_id=rev_item["listing_id"],
-                guest_id=rev_item["guest_id"],
-                rating=rev_item["rating"],
-                comment=rev_item["comment"]
-            )
-            db.add(review)
+            existing_rev = db.query(Review).filter(
+                Review.listing_id == rev_item["listing_id"],
+                Review.guest_id == rev_item["guest_id"],
+                Review.comment == rev_item["comment"]
+            ).first()
+            if not existing_rev:
+                review = Review(**rev_item)
+                db.add(review)
         db.commit()
 
         print("Seeding Wishlists...")
-        # Add 4 realistic wishlist entries (no duplicates)
         wishlist_data = [
             {"user_id": guest_john.id, "listing_id": created_listings[0].id},   # John saves Malibu Villa
             {"user_id": guest_john.id, "listing_id": created_listings[11].id},  # John saves Copacabana Penthouse
@@ -797,8 +782,13 @@ def seed_database():
             {"user_id": guest_emily.id, "listing_id": created_listings[9].id}   # Emily saves Zermatt Chalet
         ]
         for wl_item in wishlist_data:
-            wl = Wishlist(user_id=wl_item["user_id"], listing_id=wl_item["listing_id"])
-            db.add(wl)
+            existing_wl = db.query(Wishlist).filter(
+                Wishlist.user_id == wl_item["user_id"],
+                Wishlist.listing_id == wl_item["listing_id"]
+            ).first()
+            if not existing_wl:
+                wl = Wishlist(user_id=wl_item["user_id"], listing_id=wl_item["listing_id"])
+                db.add(wl)
         db.commit()
         
         print("Database seeded successfully!")

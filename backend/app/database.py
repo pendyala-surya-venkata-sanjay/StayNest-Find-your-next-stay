@@ -4,6 +4,8 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Fallback to local airbnb.db if DATABASE_URL is not set
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./airbnb.db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # Automatically create base directories if SQLite path is set (e.g., inside a persistent volume /data)
 if DATABASE_URL.startswith("sqlite:///"):
