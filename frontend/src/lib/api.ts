@@ -1,6 +1,7 @@
 import { User, Listing, Booking, AuthResponse, Review, Wishlist } from "@/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const isBrowser = typeof window !== "undefined";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isBrowser ? "http://localhost:8000" : "http://127.0.0.1:8000");
 
 class ApiError extends Error {
   status: number;
@@ -114,6 +115,7 @@ export const api = {
       page?: number;
       limit?: number;
       amenities?: string[];
+      sort_by?: string;
     } = {}): Promise<Listing[]> {
       const searchParams = new URLSearchParams();
       
@@ -161,7 +163,25 @@ export const api = {
     },
 
     async getBlockedDates(id: number): Promise<{ blocked_dates: string[] }> {
-      return apiFetch<{ blocked_dates: string[] }>(`/api/listings/${id}/availability`);
+      const data = await apiFetch<{ listing_id: number; blocked_dates: { check_in: string; check_out: string }[] }>(`/api/listings/${id}/availability`);
+      
+      const dates: string[] = [];
+      data.blocked_dates.forEach(range => {
+        // Parse dates as local dates to prevent timezone drift shifts
+        const start = new Date(range.check_in + "T00:00:00");
+        const end = new Date(range.check_out + "T00:00:00");
+        let current = new Date(start);
+        
+        while (current <= end) {
+          const year = current.getFullYear();
+          const month = String(current.getMonth() + 1).padStart(2, '0');
+          const day = String(current.getDate()).padStart(2, '0');
+          dates.push(`${year}-${month}-${day}`);
+          current.setDate(current.getDate() + 1);
+        }
+      });
+      
+      return { blocked_dates: dates };
     }
   },
 
@@ -231,6 +251,16 @@ export const api = {
       return apiFetch<Review>(`/api/listings/${listingId}/reviews`, {
         method: "POST",
         body: JSON.stringify(payload),
+      });
+    }
+  },
+
+  // AI Stay Concierge
+  ai: {
+    async queryConcierge(message: string): Promise<{ criteria?: any; message: string }> {
+      return apiFetch<{ criteria?: any; message: string }>("/api/ai/concierge", {
+        method: "POST",
+        body: JSON.stringify({ message }),
       });
     }
   }

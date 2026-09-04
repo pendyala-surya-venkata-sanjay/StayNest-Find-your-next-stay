@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isBefore, isAfter, parseISO, startOfToday } from "date-fns";
 
@@ -7,6 +7,9 @@ interface CalendarPickerProps {
   checkIn: string;
   checkOut: string;
   onChange: (checkIn: string, checkOut: string) => void;
+  selectionMode?: "checkIn" | "checkOut";
+  setSelectionMode?: (mode: "checkIn" | "checkOut") => void;
+  setCalendarOpen?: (open: boolean) => void;
 }
 
 export const CalendarPicker: React.FC<CalendarPickerProps> = ({
@@ -14,6 +17,9 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
   checkIn,
   checkOut,
   onChange,
+  selectionMode = "checkIn",
+  setSelectionMode,
+  setCalendarOpen,
 }) => {
   const today = startOfToday();
   const [currentMonth, setCurrentMonth] = useState(today);
@@ -45,33 +51,78 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
   const handleDateClick = (date: Date) => {
     const formatted = format(date, "yyyy-MM-dd");
 
-    if (!checkIn || (checkIn && checkOut)) {
-      // First click: select checkIn
-      onChange(formatted, "");
-    } else {
-      // Second click: select checkOut
-      const checkInDate = parseISO(checkIn);
-      
-      if (isBefore(date, checkInDate) || isSameDay(date, checkInDate)) {
-        // If second selection is before or same as check-in, set it as check-in instead
-        onChange(formatted, "");
-      } else {
-        // Check if there is any blocked date between check-in and the selected check-out date
-        let hasBlockedInRange = false;
-        let scanDate = new Date(checkInDate);
-        while (isBefore(scanDate, date)) {
-          if (isBlocked(scanDate)) {
-            hasBlockedInRange = true;
-            break;
-          }
-          scanDate.setDate(scanDate.getDate() + 1);
-        }
-
-        if (hasBlockedInRange) {
-          alert("Selected range overlaps with an existing booking. Please try other dates.");
+    if (selectionMode === "checkIn") {
+      // Set Check-in. If check-out is before check-in, clear check-out.
+      if (checkOut) {
+        const checkOutDate = parseISO(checkOut);
+        if (isBefore(checkOutDate, date) || isSameDay(checkOutDate, date)) {
           onChange(formatted, "");
         } else {
-          onChange(checkIn, formatted);
+          // Check if there is any blocked date in between
+          let hasBlockedInRange = false;
+          let scanDate = new Date(date);
+          while (isBefore(scanDate, checkOutDate)) {
+            if (isBlocked(scanDate)) {
+              hasBlockedInRange = true;
+              break;
+            }
+            scanDate.setDate(scanDate.getDate() + 1);
+          }
+          if (hasBlockedInRange) {
+            alert("Selected range overlaps with an existing booking. Please try other dates.");
+            onChange(formatted, "");
+          } else {
+            onChange(formatted, checkOut);
+          }
+        }
+      } else {
+        onChange(formatted, "");
+      }
+      
+      // Auto-guide to checkOut selection
+      if (setSelectionMode) {
+        setSelectionMode("checkOut");
+      }
+    } else {
+      // selectionMode is "checkOut"
+      if (!checkIn) {
+        // If check-in is not selected yet, treat this click as check-in instead!
+        onChange(formatted, "");
+        if (setSelectionMode) {
+          setSelectionMode("checkOut");
+        }
+      } else {
+        const checkInDate = parseISO(checkIn);
+        if (isBefore(date, checkInDate) || isSameDay(date, checkInDate)) {
+          // If checkout selected is before check-in, set it as check-in instead
+          onChange(formatted, "");
+          if (setSelectionMode) {
+            setSelectionMode("checkOut");
+          }
+        } else {
+          // Check if there is any blocked date between check-in and checkout
+          let hasBlockedInRange = false;
+          let scanDate = new Date(checkInDate);
+          while (isBefore(scanDate, date)) {
+            if (isBlocked(scanDate)) {
+              hasBlockedInRange = true;
+              break;
+            }
+            scanDate.setDate(scanDate.getDate() + 1);
+          }
+
+          if (hasBlockedInRange) {
+            alert("Selected range overlaps with an existing booking. Please try other dates.");
+            onChange(formatted, "");
+            if (setSelectionMode) {
+              setSelectionMode("checkOut");
+            }
+          } else {
+            onChange(checkIn, formatted);
+            if (setCalendarOpen) {
+              setCalendarOpen(false); // Close popup on successful range selection
+            }
+          }
         }
       }
     }
@@ -92,7 +143,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
       return isAfter(date, checkInDate) && isBefore(date, checkOutDate);
     }
 
-    if (hoveredDate) {
+    if (hoveredDate && selectionMode === "checkOut") {
       return isAfter(date, checkInDate) && isBefore(date, hoveredDate) && isBefore(hoveredDate, date) === false;
     }
 
@@ -103,30 +154,30 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
     <div className="w-full flex flex-col gap-4 select-none">
       {/* Month Navigation Banner */}
       <div className="flex items-center justify-between px-2">
-        <h4 className="text-sm font-bold text-dark">
+        <h4 className="text-xs font-bold text-dark font-serif tracking-tight uppercase">
           {format(currentMonth, "MMMM yyyy")}
         </h4>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={prevMonth}
             disabled={isSameDay(startOfMonth(currentMonth), startOfMonth(today))}
-            className="p-1.5 rounded-full border border-border-gray hover:border-dark disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer text-dark"
+            className="p-1 rounded-full border border-border-gray hover:border-brand disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer text-dark hover:text-brand"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={14} />
           </button>
           <button
             type="button"
             onClick={nextMonth}
-            className="p-1.5 rounded-full border border-border-gray hover:border-dark transition-colors cursor-pointer text-dark"
+            className="p-1 rounded-full border border-border-gray hover:border-brand transition-colors cursor-pointer text-dark hover:text-brand"
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button>
         </div>
       </div>
 
       {/* Weekday Labels Header */}
-      <div className="grid grid-cols-7 text-center text-xs font-semibold text-muted mb-1">
+      <div className="grid grid-cols-7 text-center text-[10px] font-bold uppercase tracking-wider text-muted mb-1">
         <span>Su</span>
         <span>Mo</span>
         <span>Tu</span>
@@ -137,10 +188,10 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
       </div>
 
       {/* Days Grid */}
-      <div className="grid grid-cols-7 gap-y-1 justify-items-center text-sm font-medium">
+      <div className="grid grid-cols-7 gap-y-1 justify-items-center text-xs font-medium">
         {/* Padding empty slots */}
         {Array.from({ length: startDayOfWeek }).map((_, i) => (
-          <div key={`empty-${i}`} className="w-9 h-9" />
+          <div key={`empty-${i}`} className="w-8 h-8" />
         ))}
 
         {/* Month Dates */}
@@ -150,6 +201,7 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
           const inRange = isInRange(day);
           const isCheckIn = checkIn && isSameDay(day, parseISO(checkIn));
           const isCheckOut = checkOut && isSameDay(day, parseISO(checkOut));
+          const isDayToday = isSameDay(day, today);
 
           return (
             <button
@@ -160,15 +212,16 @@ export const CalendarPicker: React.FC<CalendarPickerProps> = ({
               onMouseLeave={() => setHoveredDate(null)}
               disabled={disabled}
               className={`
-                w-9 h-9 flex items-center justify-center rounded-full transition-all relative text-xs
+                w-8 h-8 flex items-center justify-center rounded-full transition-all relative text-[10px] font-bold
                 ${disabled ? "text-zinc-300 line-through cursor-not-allowed" : "text-dark cursor-pointer"}
-                ${selected ? "bg-dark text-white font-bold" : ""}
-                ${inRange && !selected ? "bg-light-gray font-semibold rounded-none w-full" : ""}
-                ${isCheckIn && checkOut ? "rounded-r-none w-full bg-dark text-white" : ""}
-                ${isCheckOut && checkIn ? "rounded-l-none w-full bg-dark text-white" : ""}
+                ${selected ? "bg-brand text-[#FAF9F6]" : ""}
+                ${inRange && !selected ? "bg-brand/10 text-brand rounded-none w-full" : ""}
+                ${isCheckIn && checkOut ? "rounded-r-none w-full bg-brand text-[#FAF9F6]" : ""}
+                ${isCheckOut && checkIn ? "rounded-l-none w-full bg-brand text-[#FAF9F6]" : ""}
+                ${isDayToday && !selected ? "border border-brand text-brand" : ""}
               `}
             >
-              <span className={`relative z-10 ${selected ? "text-white" : ""}`}>
+              <span className={`relative z-10 ${selected ? "text-[#FAF9F6]" : ""}`}>
                 {format(day, "d")}
               </span>
               {/* Subtle indicators for blocked dates */}

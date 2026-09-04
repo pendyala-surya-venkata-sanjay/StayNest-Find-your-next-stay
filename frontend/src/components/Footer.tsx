@@ -1,5 +1,6 @@
 import React from "react";
 import { Globe } from "lucide-react";
+import { StayNestLogo } from "./StayNestLogo";
 
 const FacebookIcon: React.FC = () => (
   <svg className="w-4 h-4 text-current fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -23,45 +24,42 @@ const InstagramIcon: React.FC = () => (
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="w-full bg-light-gray border-t border-border-gray py-12 mt-auto text-dark text-xs sm:text-sm">
+    <footer className="w-full bg-white border-t border-border-gray py-12 mt-auto text-dark text-xs sm:text-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8 pb-8 border-b border-border-gray">
         
-        {/* Support Section */}
+        {/* About Section */}
         <div className="flex flex-col gap-3">
+          <StayNestLogo size={24} />
+          <p className="text-muted leading-relaxed text-xs">
+            Discover places worth remembering. Curated, unique property collections crafted for cozy, premium travel experiences around the world.
+          </p>
+        </div>
+
+        {/* Support Section */}
+        <div className="flex flex-col gap-2.5">
           <h4 className="font-bold text-dark text-xs tracking-wider uppercase">Support</h4>
-          <a href="#" className="text-muted hover:underline">Help Center</a>
-          <a href="#" className="text-muted hover:underline">AirCover</a>
-          <a href="#" className="text-muted hover:underline">Anti-discrimination</a>
-          <a href="#" className="text-muted hover:underline">Disability support</a>
-          <a href="#" className="text-muted hover:underline">Cancellation options</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Help Center</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Stay Safety Guide</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Cancellation policies</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Disability support</a>
         </div>
 
         {/* Hosting Section */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           <h4 className="font-bold text-dark text-xs tracking-wider uppercase">Hosting</h4>
-          <a href="#" className="text-muted hover:underline">Rent your home</a>
-          <a href="#" className="text-muted hover:underline">AirCover for Hosts</a>
-          <a href="#" className="text-muted hover:underline">Hosting resources</a>
-          <a href="#" className="text-muted hover:underline">Community forum</a>
-          <a href="#" className="text-muted hover:underline">Hosting responsibly</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">List your property</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Host protection cover</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Hosting resources</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Community forum</a>
         </div>
 
-        {/* StayNest Section */}
-        <div className="flex flex-col gap-3">
-          <h4 className="font-bold text-dark text-xs tracking-wider uppercase">StayNest</h4>
-          <a href="#" className="text-muted hover:underline">Newsroom</a>
-          <a href="#" className="text-muted hover:underline">New features</a>
-          <a href="#" className="text-muted hover:underline">Careers</a>
-          <a href="#" className="text-muted hover:underline">Investors</a>
-          <a href="#" className="text-muted hover:underline">Gift cards</a>
-        </div>
-
-        {/* Disclaimer / Assignment Section */}
-        <div className="flex flex-col gap-3">
-          <h4 className="font-bold text-dark text-xs tracking-wider uppercase">StayNest Marketplace</h4>
-          <p className="text-muted leading-relaxed text-xs">
-            This project is an accommodation marketplace built for demonstration purposes, satisfying fullstack architectural guidelines with FastAPI and Next.js.
-          </p>
+        {/* Company Section */}
+        <div className="flex flex-col gap-2.5">
+          <h4 className="font-bold text-dark text-xs tracking-wider uppercase">Company</h4>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Our Story</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">New features</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Careers</a>
+          <a href="#" className="text-muted hover:text-brand transition-colors">Terms & Privacy</a>
         </div>
 
       </div>
@@ -71,7 +69,7 @@ export const Footer: React.FC = () => {
         
         {/* Left Side */}
         <div className="flex flex-wrap items-center gap-2 text-muted text-xs">
-          <span>© 2026 StayNest, Inc.</span>
+          <span>© 2026 StayNest, Inc. All rights reserved.</span>
           <span>·</span>
           <a href="#" className="hover:underline">Privacy</a>
           <span>·</span>
@@ -82,19 +80,19 @@ export const Footer: React.FC = () => {
 
         {/* Right Side */}
         <div className="flex items-center gap-6 text-dark font-semibold text-xs">
-          <button className="flex items-center gap-1.5 hover:underline">
+          <button className="flex items-center gap-1.5 hover:text-brand transition-colors">
             <Globe size={14} />
             <span>English (US)</span>
           </button>
-          <button className="hover:underline">
+          <button className="hover:text-brand transition-colors">
             <span>$ USD</span>
           </button>
           
           {/* Socials */}
           <div className="flex items-center gap-4 text-dark">
-            <a href="#" className="hover:opacity-85" aria-label="Facebook"><FacebookIcon /></a>
-            <a href="#" className="hover:opacity-85" aria-label="Twitter"><TwitterIcon /></a>
-            <a href="#" className="hover:opacity-85" aria-label="Instagram"><InstagramIcon /></a>
+            <a href="#" className="hover:text-brand transition-colors" aria-label="Facebook"><FacebookIcon /></a>
+            <a href="#" className="hover:text-brand transition-colors" aria-label="Twitter"><TwitterIcon /></a>
+            <a href="#" className="hover:text-brand transition-colors" aria-label="Instagram"><InstagramIcon /></a>
           </div>
         </div>
 

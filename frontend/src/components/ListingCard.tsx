@@ -44,73 +44,74 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="group flex flex-col gap-2 w-full cursor-pointer transition-transform duration-200"
+      className="group flex flex-col gap-3 w-full cursor-pointer bg-white border border-border-gray/40 rounded-2xl p-3 shadow-card hover-lift"
     >
       {/* Property Image Container */}
-      <div className="relative aspect-square sm:aspect-[20/19] w-full overflow-hidden rounded-xl bg-zinc-100">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-zinc-50">
         <img
           src={imageUrl}
           alt={listing.title}
-          className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out"
+          className="h-full w-full object-cover object-center group-hover:scale-105 img-transition"
           loading="lazy"
         />
 
         {/* Wishlist Heart Toggle */}
         <button
           onClick={handleWishlistClick}
-          className="absolute top-3 right-3 p-1.5 rounded-full hover:scale-110 active:scale-95 transition-all text-white hover:text-white/90 drop-shadow-sm focus:outline-none"
+          className="absolute top-2.5 right-2.5 p-2 rounded-full bg-white/95 hover:bg-white backdrop-blur-md shadow-xs active-press transition-all text-dark border border-border-gray/30 focus:outline-none"
           aria-label="Save to wishlist"
         >
           <Heart
-            size={22}
+            size={16}
             className={`
-              transition-all stroke-white stroke-[2.2]
+              transition-all duration-200
               ${
                 isSaved
                   ? "fill-brand stroke-brand scale-110"
-                  : "fill-black/30 hover:fill-black/40"
+                  : "stroke-dark fill-transparent hover:stroke-brand"
               }
             `}
           />
         </button>
 
         {/* Category Badge overlay */}
-        <div className="absolute bottom-3 left-3 bg-white/80 backdrop-blur-xs px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-dark">
+        <div className="absolute bottom-2.5 left-2.5 bg-brand-light/95 backdrop-blur-xs border border-brand/10 px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest text-brand">
           {listing.category}
         </div>
       </div>
 
-      {/* Text Description Grid */}
-      <div className="flex flex-col gap-1.5 px-0.5 mt-1">
-        <div className="flex items-start justify-between gap-2">
-          {/* Location */}
-          <h3 className="text-sm font-bold text-dark truncate">
+      {/* Description Content */}
+      <div className="flex flex-col flex-1 px-1 py-1">
+        {/* Rating and Location Header */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
             {listing.location_city}, {listing.location_country}
-          </h3>
+          </span>
 
-          {/* Star Rating */}
-          <span className="flex items-center gap-1 text-xs font-semibold text-dark">
-            <Star size={12} className="fill-dark stroke-dark" />
+          {/* Star Rating Badge */}
+          <span className="flex items-center gap-1 bg-accent-light/60 border border-accent/20 px-2 py-0.5 rounded-lg text-[10px] font-extrabold text-accent-dark">
+            <Star size={10} className="fill-accent stroke-accent" />
             <span>{avgRating}</span>
-            {reviewsCount > 0 && <span className="text-muted font-normal text-[10px]">({reviewsCount})</span>}
           </span>
         </div>
 
-        {/* Title / Spec */}
-        <p className="text-xs text-muted truncate">
+        {/* Serif Title */}
+        <h3 className="font-serif text-base font-bold text-dark mt-2 line-clamp-1 group-hover:text-brand transition-colors">
           {listing.title}
-        </p>
+        </h3>
 
-        {/* Bedrooms / Capacity */}
-        <p className="text-xs text-muted">
+        {/* Metadata Details */}
+        <p className="text-xs text-muted mt-1 font-medium">
           {listing.guests_count} guest{listing.guests_count !== 1 ? "s" : ""} · {listing.bedrooms_count} bedroom{listing.bedrooms_count !== 1 ? "s" : ""}
         </p>
 
         {/* Pricing breakdown */}
-        <p className="text-sm font-bold text-dark mt-0.5">
-          ₹{listing.price_per_night.toLocaleString("en-IN")}{" "}
-          <span className="font-normal text-muted text-xs">night</span>
-        </p>
+        <div className="flex items-baseline gap-1 mt-auto pt-3 border-t border-border-gray/40">
+          <span className="font-serif text-base font-extrabold text-brand">
+            ₹{listing.price_per_night.toLocaleString("en-IN")}
+          </span>
+          <span className="text-[10px] text-muted font-medium">/ night</span>
+        </div>
       </div>
     </Link>
   );

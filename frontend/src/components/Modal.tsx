@@ -51,12 +51,12 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-backdrop-fade-in"
       onClick={handleBackdropClick}
     >
       <div
         ref={modalRef}
-        className={`w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-premium overflow-hidden transform scale-100 transition-all duration-300 max-h-[90vh] flex flex-col`}
+        className={`w-full ${sizeClasses[size]} bg-white rounded-2xl shadow-premium overflow-hidden max-h-[90vh] flex flex-col animate-modal-scale-up`}
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-border-gray px-6 py-4">

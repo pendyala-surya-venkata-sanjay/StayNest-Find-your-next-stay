@@ -8,7 +8,7 @@ if backend_dir not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import auth, listings, bookings, host, wishlist
+from app.routers import auth, listings, bookings, host, wishlist, ai
 
 # Initialize database tables on application startup
 Base.metadata.create_all(bind=engine)
@@ -44,6 +44,7 @@ app.include_router(listings.router)
 app.include_router(bookings.router)
 app.include_router(host.router)
 app.include_router(wishlist.router)
+app.include_router(ai.router)
 
 @app.get("/")
 def read_root():

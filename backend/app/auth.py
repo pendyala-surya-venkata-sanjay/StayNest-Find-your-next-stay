@@ -11,7 +11,12 @@ from app.database import get_db
 from app.models import User
 
 # Configuration loaded from environment variables
-SECRET_KEY = os.getenv("JWT_SECRET", "airbnb-clone-super-secret-key-382910")
+SECRET_KEY = os.getenv("JWT_SECRET")
+if not SECRET_KEY:
+    is_production = os.getenv("RENDER") is not None or "postgres" in os.getenv("DATABASE_URL", "")
+    if is_production:
+        raise RuntimeError("JWT_SECRET environment variable is required in production!")
+    SECRET_KEY = "airbnb-clone-super-secret-key-382910"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day expiration for easy development/testing
 

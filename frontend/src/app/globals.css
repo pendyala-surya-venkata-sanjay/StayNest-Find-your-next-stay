@@ -1,27 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #ff385c;
-  --color-brand-dark: #e00b41;
-  --color-brand-light: #fff8f6;
+  --color-brand: #1E3F20;
+  --color-brand-dark: #122814;
+  --color-brand-light: #F4F7F4;
   
-  --color-dark: #222222;
-  --color-muted: #717171;
-  --color-light-gray: #f7f7f7;
-  --color-border-gray: #dddddd;
+  --color-accent: #D97706;
+  --color-accent-dark: #B45309;
+  --color-accent-light: #FEF3C7;
   
-  --font-sans: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --color-dark: #1A241C;
+  --color-muted: #5F6B60;
+  --color-light-gray: #F0F3F1;
+  --color-border-gray: #D6DDD7;
+  
+  --font-sans: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: var(--font-serif), Georgia, serif;
   --font-mono: var(--font-geist-mono), monospace;
   
-  --shadow-premium: 0 6px 16px rgba(0, 0, 0, 0.12);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 10px 25px -5px rgba(30, 63, 32, 0.12), 0 8px 10px -6px rgba(30, 63, 32, 0.08);
+  --shadow-card: 0 4px 20px -2px rgba(30, 63, 32, 0.06);
   
-  --radius-airbnb: 12px;
+  --radius-airbnb: 16px;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #222222;
+  --background: #FAF9F6;
+  --foreground: #1A241C;
 }
 
 body {
@@ -53,4 +58,144 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Unified Reusable Motion Standard classes */
+.hover-lift {
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1), border-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -4px rgba(30, 63, 32, 0.08), 0 4px 12px -2px rgba(30, 63, 32, 0.04);
+}
+
+.active-press {
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.active-press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.img-transition {
+  transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Media hook respects preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: scroll !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    transform: none !important;
+  }
+}
+
+/* Animations and transitions for Page, Modal & Navigation Motion */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-modal-scale-up {
+  animation: scaleUp 220ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-backdrop-fade-in {
+  animation: fadeIn 220ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-drawer-slide-up {
+  animation: slideUp 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-dropdown-slide {
+  animation: dropdownSlide 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Responsive calendar overlays animations */
+@media (max-width: 767px) {
+  .animate-responsive-calendar {
+    animation: slideUp 280ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+@media (min-width: 768px) {
+  .animate-responsive-calendar {
+    animation: scaleUp 220ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+}
+
+/* Dynamic Fade-in Reveal class for smooth page transitions */
+.animate-fade-in {
+  animation: fadeIn 350ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes scaleSuccessIcon {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes successSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-success-icon {
+  animation: scaleSuccessIcon 350ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-success-reveal {
+  animation: successSlideUp 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }

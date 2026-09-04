@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heart, Compass, LogIn, Plane, Sparkles } from "lucide-react";
+import { Heart, LogIn, Plane, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import { Wishlist, Listing } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
 import { Loading } from "@/components/Loading";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
@@ -72,7 +71,6 @@ export default function WishlistPage() {
   const handleRemoveFromWishlist = async (listingId: number) => {
     try {
       await api.wishlist.removeFromWishlist(listingId);
-      // Update local state without full reload
       setWishlistItems((prev) => prev.filter((item) => item.listing_id !== listingId));
       showToast("Stay removed from your wishlist.", "info");
     } catch (err: any) {
@@ -89,17 +87,17 @@ export default function WishlistPage() {
     return (
       <div className="w-full max-w-md mx-auto py-12 px-4 sm:px-6">
         <div className="flex flex-col items-center text-center gap-4 mb-8">
-          <div className="p-4 bg-light-gray text-muted rounded-full">
-            <Heart size={36} className="text-muted fill-transparent stroke-[1.8]" />
+          <div className="p-4 bg-brand-light text-brand rounded-full border border-brand/10 shadow-xs">
+            <Heart size={36} className="text-brand fill-transparent stroke-[1.8]" />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-dark">Wishlists</h1>
-          <p className="text-sm text-muted">
+          <h1 className="font-serif text-3xl font-extrabold tracking-tight text-dark">Wishlists</h1>
+          <p className="text-xs text-muted leading-relaxed max-w-xs">
             Log in to view or create wishlists, and save your favorite listings.
           </p>
         </div>
 
-        <form onSubmit={handleLocalLoginSubmit} className="bg-white border border-border-gray p-6 rounded-2xl shadow-card flex flex-col gap-4">
-          <h3 className="font-bold text-dark text-base border-b border-border-gray pb-3 mb-2">Guest Log In</h3>
+        <form onSubmit={handleLocalLoginSubmit} className="bg-white border border-border-gray/40 p-6 rounded-3xl shadow-card flex flex-col gap-4">
+          <h3 className="font-serif text-base font-extrabold text-dark border-b border-border-gray/40 pb-3 mb-2">Guest Log In</h3>
           
           {loginError && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-medium">
@@ -107,44 +105,58 @@ export default function WishlistPage() {
             </div>
           )}
 
-          <Input
-            type="email"
-            label="Email address"
-            placeholder="e.g. john@guest.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loginLoading}
-            required
-          />
-          <Input
-            type="password"
-            label="Password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loginLoading}
-            required
-          />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[9px] font-bold text-dark uppercase tracking-wider">Email Address</label>
+            <input
+              type="email"
+              placeholder="e.g. john@guest.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loginLoading}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl p-3.5 text-xs focus:outline-none focus:ring-1 bg-white text-dark"
+              required
+            />
+          </div>
 
-          <Button type="submit" variant="brand" fullWidth isLoading={loginLoading} className="py-3 font-semibold mt-2">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[9px] font-bold text-dark uppercase tracking-wider">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loginLoading}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl p-3.5 text-xs focus:outline-none focus:ring-1 bg-white text-dark"
+              required
+            />
+          </div>
+
+          <Button type="submit" variant="brand" fullWidth isLoading={loginLoading} className="py-3.5 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md mt-2">
             Log In
           </Button>
+
+          <p className="text-[10px] text-muted text-center leading-relaxed mt-2 font-light">
+            Seed accounts: <span className="font-semibold text-dark">john@guest.com</span> / <span className="font-semibold text-dark">password123</span>
+          </p>
         </form>
       </div>
     );
   }
 
-  // 2. LOADING STATE
+  // 2. PREMIUM LOADING STATE
   if (loading) {
     return (
-      <div className="w-full max-w-7xl mx-auto py-4 px-4 flex flex-col gap-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-dark">Wishlist</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 animate-pulse mt-4">
+      <div className="w-full max-w-7xl mx-auto py-6 px-4 sm:px-6 flex flex-col gap-8 animate-pulse bg-[#FAF9F6]">
+        <div className="flex flex-col gap-2">
+          <div className="h-8 bg-zinc-200/50 rounded-xl w-1/4" />
+          <div className="h-4 bg-zinc-200/50 rounded-xl w-1/3" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 mt-4">
           {Array.from({ length: 4 }).map((_, idx) => (
             <div key={idx} className="w-full flex flex-col gap-3">
-              <div className="relative aspect-square w-full rounded-xl bg-zinc-100" />
-              <div className="h-4 bg-zinc-100 rounded w-3/4" />
-              <div className="h-3 bg-zinc-100 rounded w-1/2" />
+              <div className="relative aspect-square w-full rounded-2xl bg-zinc-200/50 border border-border-gray/30" />
+              <div className="h-4 bg-zinc-200/50 rounded-lg w-3/4" />
+              <div className="h-3 bg-zinc-200/50 rounded-lg w-1/2" />
             </div>
           ))}
         </div>
@@ -155,7 +167,7 @@ export default function WishlistPage() {
   // 3. API LOAD ERROR STATE
   if (error) {
     return (
-      <div className="w-full max-w-lg mx-auto py-12">
+      <div className="w-full max-w-lg mx-auto py-12 px-4">
         <ErrorState
           title="Could not load your wishlist"
           message={error}
@@ -168,20 +180,31 @@ export default function WishlistPage() {
   // 4. EMPTY WISHLIST STATE
   if (wishlistItems.length === 0) {
     return (
-      <div className="w-full max-w-lg mx-auto py-16 px-4">
-        <EmptyState
-          title="Create your first wishlist"
-          description="As you search, click the heart icon on your favorite stays to save them here."
-          actionText="Explore stays"
-          onAction={() => router.push("/")}
-        />
+      <div className="w-full max-w-md mx-auto py-16 px-4 flex flex-col items-center text-center gap-6">
+        <div className="p-4 bg-brand-light text-brand rounded-full border border-brand/10 shadow-xs">
+          <Heart size={44} className="stroke-[1.8] fill-transparent text-brand" />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h1 className="font-serif text-3xl font-extrabold text-dark tracking-tight">Your next favorite place is waiting</h1>
+          <p className="text-sm text-muted max-w-xs font-light">
+            As you explore, click the heart icon on your favorite stays to save them in your personal curation.
+          </p>
+        </div>
+        <Link href="/explore" className="w-full mt-2">
+          <Button variant="brand" className="w-full py-3 font-bold text-xs uppercase tracking-wider rounded-xl shadow-md">
+            Explore Stays
+          </Button>
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-2 px-4 sm:px-6 flex flex-col gap-8">
-      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-dark">Wishlist</h1>
+    <div className="w-full max-w-7xl mx-auto py-2 px-4 sm:px-6 flex flex-col gap-8 bg-[#FAF9F6]">
+      <div className="flex flex-col gap-2 border-b border-border-gray/40 pb-4">
+        <h1 className="font-serif text-3xl sm:text-5xl font-extrabold tracking-tight text-dark">Saved Stays</h1>
+        <p className="text-xs sm:text-sm text-muted font-light">Your collection of sanctuaries worth returning to.</p>
+      </div>
       
       {/* Saved Listings Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 animate-fade-in">

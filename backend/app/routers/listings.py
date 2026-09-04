@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session, joinedload, selectinload
 from datetime import date
 from typing import List, Optional
 
@@ -24,10 +24,27 @@ def get_listings(
     max_price: Optional[float] = None,
     category: Optional[str] = None,
     amenities: Optional[List[str]] = Query(None),
+    sort_by: Optional[str] = "newest",
     db: Session = Depends(get_db)
 ):
+    # Validate sort_by parameter value
+    if sort_by not in ("newest", "price_asc", "price_desc", "rating"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid sort_by parameter. Supported values: newest, price_asc, price_desc, rating"
+        )
+
     # Only query active listings
-    query = db.query(Listing).filter(Listing.is_active == True)
+    query = (
+        db.query(Listing)
+        .filter(Listing.is_active == True)
+        .options(
+            joinedload(Listing.host),
+            selectinload(Listing.images),
+            selectinload(Listing.amenities),
+            selectinload(Listing.reviews)
+        )
+    )
     
     # 1. Category Filter
     if category:
@@ -39,12 +56,14 @@ def get_listings(
     if max_price is not None:
         query = query.filter(Listing.price_per_night <= max_price)
         
-    # 3. Location Filter (searches city or country, case-insensitive)
+    # 3. Location/Keyword Filter (searches title, city, country, description, case-insensitive)
     if location:
         search_str = f"%{location}%"
         query = query.filter(
+            (Listing.title.ilike(search_str)) |
             (Listing.location_city.ilike(search_str)) | 
-            (Listing.location_country.ilike(search_str))
+            (Listing.location_country.ilike(search_str)) |
+            (Listing.description.ilike(search_str))
         )
         
     # 4. Guest Count Filter
@@ -75,16 +94,40 @@ def get_listings(
             # We filter Listings where there is an association with an Amenity with this name
             query = query.filter(Listing.amenities.any(Amenity.name == am_name))
             
+    # 7. Apply Sorting
+    if sort_by == "price_asc":
+        query = query.order_by(Listing.price_per_night.asc(), Listing.created_at.desc())
+    elif sort_by == "price_desc":
+        query = query.order_by(Listing.price_per_night.desc(), Listing.created_at.desc())
+    elif sort_by == "rating":
+        query = (
+            query.outerjoin(Review)
+            .group_by(Listing.id)
+            .order_by(func.coalesce(func.avg(Review.rating), 0).desc(), Listing.created_at.desc())
+        )
+    else:  # newest (default)
+        query = query.order_by(Listing.created_at.desc())
+
     # Apply Pagination
     offset = (page - 1) * limit
-    listings = query.order_by(Listing.created_at.desc()).offset(offset).limit(limit).all()
+    listings = query.offset(offset).limit(limit).all()
     
     return listings
 
 # GET /api/listings/{id} - Get detailed listing info
 @router.get("/{id}", response_model=ListingResponse)
 def get_listing_by_id(id: int, db: Session = Depends(get_db)):
-    listing = db.query(Listing).filter(Listing.id == id, Listing.is_active == True).first()
+    listing = (
+        db.query(Listing)
+        .filter(Listing.id == id, Listing.is_active == True)
+        .options(
+            joinedload(Listing.host),
+            selectinload(Listing.images),
+            selectinload(Listing.amenities),
+            selectinload(Listing.reviews)
+        )
+        .first()
+    )
     if not listing:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

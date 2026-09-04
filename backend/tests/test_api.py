@@ -456,3 +456,83 @@ def test_reviews_endpoints(client, seed_data):
     assert len(response.json()) == 1
     assert response.json()[0]["comment"] == "Truly awesome villa!"
     assert response.json()[0]["rating"] == 5
+
+def test_ai_concierge_endpoints(client):
+    # Test Case 1: Peaceful beach stay in Goa under 7000 for two people
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": "Peaceful beach stay in Goa under ₹7000 for two people"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"]["destination"] == "Goa"
+    assert data["criteria"]["guests"] == 2
+    assert data["criteria"]["max_price"] == 7000.0
+    assert data["criteria"]["category"] == "Beachfront"
+    assert "peaceful" in data["criteria"]["preferences"]
+    assert "beach" in data["criteria"]["preferences"]
+
+    # Test Case 2: Mountain retreat near Manali for 4 guests
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": "Mountain retreat near Manali for 4 guests"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"]["destination"] == "Manali"
+    assert data["criteria"]["guests"] == 4
+    assert data["criteria"]["category"] == "Cabins"
+    assert "mountain" in data["criteria"]["preferences"]
+
+    # Test Case 3: Luxury stay in Hyderabad
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": "Luxury stay in Hyderabad"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"]["destination"] == "Hyderabad"
+    assert "luxury" in data["criteria"]["preferences"]
+
+    # Test Case 4: Quiet Kerala stay for a couple
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": "Quiet Kerala stay for a couple"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"]["destination"] == "Kerala"
+    assert data["criteria"]["guests"] == 2
+    assert "quiet" in data["criteria"]["preferences"]
+
+    # Test Case 5: Ambiguous request ("I want somewhere nice")
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": "I want somewhere nice"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"] is None
+    assert "Tell me a little more" in data["message"]
+
+    # Test Case 6: Too short input
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": "ab"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"] is None
+    assert "Please type a search query" in data["message"]
+
+    # Test Case 7: Excessively long input
+    long_msg = "a" * 250
+    response = client.post(
+        "/api/ai/concierge",
+        json={"message": long_msg}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["criteria"] is None
+    assert "too long" in data["message"]
+

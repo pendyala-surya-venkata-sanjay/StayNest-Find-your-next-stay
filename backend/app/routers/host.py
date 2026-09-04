@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from typing import List
 
 from app.database import get_db
@@ -15,10 +15,21 @@ def get_host_listings(
     current_host: User = Depends(get_current_host),
     db: Session = Depends(get_db)
 ):
-    listings = db.query(Listing).filter(
-        Listing.host_id == current_host.id,
-        Listing.is_active == True
-    ).order_by(Listing.created_at.desc()).all()
+    listings = (
+        db.query(Listing)
+        .filter(
+            Listing.host_id == current_host.id,
+            Listing.is_active == True
+        )
+        .options(
+            joinedload(Listing.host),
+            selectinload(Listing.images),
+            selectinload(Listing.amenities),
+            selectinload(Listing.reviews)
+        )
+        .order_by(Listing.created_at.desc())
+        .all()
+    )
     
     return listings
 

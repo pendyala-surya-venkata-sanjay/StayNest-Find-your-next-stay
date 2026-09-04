@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Save, Image as ImageIcon, MapPin, Building, DollarSign, Users } from "lucide-react";
+import { ChevronLeft, Save, Image as ImageIcon, MapPin, Building, DollarSign, Users, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/Button";
@@ -146,10 +146,10 @@ export default function EditListingPage({ params }: PageProps) {
   // Access check
   if (!user || user.role !== "host") {
     return (
-      <div className="w-full max-w-md mx-auto py-16 px-4 text-center flex flex-col gap-4">
-        <h1 className="text-xl font-bold text-dark">Access Denied</h1>
-        <p className="text-sm text-muted">Please sign in as a host to upload property listings.</p>
-        <Button variant="brand" onClick={() => router.push("/")} className="py-2 mt-2">
+      <div className="w-full max-w-md mx-auto py-16 px-4 text-center flex flex-col gap-6">
+        <h1 className="font-serif text-3xl font-extrabold text-dark">Access Denied</h1>
+        <p className="text-sm text-muted font-light leading-relaxed">Please sign in as a host to upload property listings.</p>
+        <Button variant="brand" onClick={() => router.push("/")} className="py-2.5 rounded-xl mt-2 font-bold uppercase text-xs">
           Back to Explore
         </Button>
       </div>
@@ -175,7 +175,7 @@ export default function EditListingPage({ params }: PageProps) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto py-2 px-4 sm:px-6">
+    <div className="w-full max-w-3xl mx-auto py-2 px-4 sm:px-6 bg-[#FAF9F6]">
       
       {/* Back button */}
       <button
@@ -186,21 +186,21 @@ export default function EditListingPage({ params }: PageProps) {
         Back to Dashboard
       </button>
 
-      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-dark mb-8">Edit property details</h1>
+      <h1 className="font-serif text-3xl sm:text-5xl font-extrabold tracking-tight text-dark mb-8">Edit Property Sanctuary</h1>
 
       {submitError && (
-        <div className="p-4 bg-red-50 border border-red-100 text-sm text-red-600 rounded-xl font-medium mb-6 animate-fade-in">
+        <div className="p-4 bg-red-50 border border-red-100 text-xs text-red-600 rounded-xl font-medium mb-6 animate-fade-in">
           {submitError}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 bg-white border border-border-gray p-6 rounded-2xl shadow-xs">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-8 bg-white border border-border-gray/40 p-6 sm:p-8 rounded-3xl shadow-card">
         
         {/* Core fields */}
         <div className="flex flex-col gap-4">
-          <h3 className="font-bold text-dark text-base border-b border-border-gray pb-2 mb-1 flex items-center gap-2">
-            <Building size={18} />
-            Property Details
+          <h3 className="font-serif text-lg font-bold text-dark border-b border-border-gray/40 pb-2 mb-2 flex items-center gap-2">
+            <Building size={18} className="text-brand" />
+            1. Basic Information
           </h3>
 
           <Input
@@ -210,30 +210,31 @@ export default function EditListingPage({ params }: PageProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={submitting}
+            className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
             required
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-dark uppercase tracking-wider">Property Description</label>
+            <label className="text-[9px] font-bold text-dark uppercase tracking-wider">Property Description</label>
             <textarea
               placeholder="Provide a detailed description of the space, views, access details, and local amenities..."
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={submitting}
-              className="w-full border border-border-gray focus:border-dark rounded-xl p-3.5 text-sm transition-all focus:outline-none bg-white text-dark min-h-[6rem] leading-relaxed resize-y"
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand focus:ring-1 rounded-xl p-3.5 text-xs transition-all focus:outline-none bg-white text-dark min-h-[6rem] leading-relaxed resize-y"
               required
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[11px] font-bold text-dark uppercase tracking-wider">Category</label>
+              <label className="text-[9px] font-bold text-dark uppercase tracking-wider">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={submitting}
-                className="w-full border border-border-gray focus:border-dark rounded-xl p-3.5 text-sm transition-all focus:outline-none bg-white text-dark h-[46px] cursor-pointer"
+                className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand focus:ring-1 rounded-xl p-3.5 text-xs transition-all focus:outline-none bg-white text-dark h-[46px] cursor-pointer"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -249,19 +250,20 @@ export default function EditListingPage({ params }: PageProps) {
               placeholder="25000"
               value={pricePerNight}
               onChange={(e) => setPricePerNight(e.target.value)}
-              leadingIcon={<DollarSign size={16} />}
+              leadingIcon={<DollarSign size={16} className="text-brand" />}
               min="1"
               disabled={submitting}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
               required
             />
           </div>
         </div>
 
         {/* Location Section */}
-        <div className="flex flex-col gap-4 mt-2">
-          <h3 className="font-bold text-dark text-base border-b border-border-gray pb-2 mb-1 flex items-center gap-2">
-            <MapPin size={18} />
-            Location Details
+        <div className="flex flex-col gap-4">
+          <h3 className="font-serif text-lg font-bold text-dark border-b border-border-gray/40 pb-2 mb-2 flex items-center gap-2">
+            <MapPin size={18} className="text-brand" />
+            2. Location Details
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <Input
@@ -271,6 +273,7 @@ export default function EditListingPage({ params }: PageProps) {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               disabled={submitting}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
               required
             />
             <Input
@@ -280,16 +283,17 @@ export default function EditListingPage({ params }: PageProps) {
               value={country}
               onChange={(e) => setCountry(e.target.value)}
               disabled={submitting}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
               required
             />
           </div>
         </div>
 
         {/* Specs */}
-        <div className="flex flex-col gap-4 mt-2">
-          <h3 className="font-bold text-dark text-base border-b border-border-gray pb-2 mb-1 flex items-center gap-2">
-            <Users size={18} />
-            Capacity & Room specs
+        <div className="flex flex-col gap-4">
+          <h3 className="font-serif text-lg font-bold text-dark border-b border-border-gray/40 pb-2 mb-2 flex items-center gap-2">
+            <Users size={18} className="text-brand" />
+            3. Capacity & Room Specs
           </h3>
           <div className="grid grid-cols-3 gap-4">
             <Input
@@ -299,55 +303,59 @@ export default function EditListingPage({ params }: PageProps) {
               onChange={(e) => setGuestsCount(e.target.value)}
               min="1"
               disabled={submitting}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
               required
             />
             <Input
               type="number"
-              label="Bedrooms count"
+              label="Bedrooms"
               value={bedroomsCount}
               onChange={(e) => setBedroomsCount(e.target.value)}
               min="0"
               disabled={submitting}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
               required
             />
             <Input
               type="number"
-              label="Bathrooms count"
+              label="Bathrooms"
               value={bathroomsCount}
               onChange={(e) => setBathroomsCount(e.target.value)}
               min="0"
               step="0.5"
               disabled={submitting}
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand rounded-xl text-xs transition-all outline-none"
               required
             />
           </div>
         </div>
 
         {/* Images */}
-        <div className="flex flex-col gap-4 mt-2">
-          <h3 className="font-bold text-dark text-base border-b border-border-gray pb-2 mb-1 flex items-center gap-2">
-            <ImageIcon size={18} />
-            Property Images
+        <div className="flex flex-col gap-4">
+          <h3 className="font-serif text-lg font-bold text-dark border-b border-border-gray/40 pb-2 mb-2 flex items-center gap-2">
+            <ImageIcon size={18} className="text-brand" />
+            4. Property Showcase Images
           </h3>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-dark uppercase tracking-wider">Image URLs (one URL per line)</label>
+            <label className="text-[9px] font-bold text-dark uppercase tracking-wider">Image URLs (one URL per line)</label>
             <textarea
               placeholder="Paste public image link URLs, one per line..."
               rows={3}
               value={imageUrlsText}
               onChange={(e) => setImageUrlsText(e.target.value)}
               disabled={submitting}
-              className="w-full border border-border-gray focus:border-dark rounded-xl p-3.5 text-sm transition-all focus:outline-none bg-white text-dark min-h-[5rem] leading-relaxed resize-y font-mono"
+              className="w-full border border-border-gray/60 focus:border-brand focus:ring-brand focus:ring-1 rounded-xl p-3.5 text-xs transition-all focus:outline-none bg-white text-dark min-h-[5rem] leading-relaxed resize-y font-mono"
               required
             />
-            <span className="text-[10px] text-muted -mt-0.5">Provide public URL resources.</span>
+            <span className="text-[9px] text-muted -mt-0.5 font-light">Provide clean image address resources.</span>
           </div>
         </div>
 
         {/* Amenities */}
-        <div className="flex flex-col gap-4 mt-2">
-          <h3 className="font-bold text-dark text-base border-b border-border-gray pb-2 mb-1">
-            Amenities
+        <div className="flex flex-col gap-4">
+          <h3 className="font-serif text-lg font-bold text-dark border-b border-border-gray/40 pb-2 mb-2 flex items-center gap-2">
+            <Sparkles size={18} className="text-brand" />
+            5. Amenities Offered
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {AVAILABLE_AMENITIES.map((amenity) => {
@@ -359,11 +367,11 @@ export default function EditListingPage({ params }: PageProps) {
                   onClick={() => handleToggleAmenity(amenity)}
                   disabled={submitting}
                   className={`
-                    flex items-center gap-2.5 p-3 border rounded-xl text-xs font-semibold transition-all text-left cursor-pointer
+                    flex items-center gap-2.5 p-3.5 border rounded-xl text-xs font-bold transition-all text-left cursor-pointer
                     ${
                       isChecked
-                        ? "border-dark bg-light-gray/60 text-dark"
-                        : "border-border-gray hover:border-dark text-muted hover:text-dark"
+                        ? "border-brand bg-brand-light text-brand"
+                        : "border-border-gray/60 hover:border-brand text-muted hover:text-dark"
                     }
                   `}
                 >
@@ -372,8 +380,8 @@ export default function EditListingPage({ params }: PageProps) {
                       w-4 h-4 rounded-md border flex items-center justify-center transition-all shrink-0
                       ${
                         isChecked
-                          ? "border-dark bg-dark text-white"
-                          : "border-border-gray bg-white"
+                          ? "border-brand bg-brand text-white"
+                          : "border-border-gray/60 bg-white"
                       }
                     `}
                   >
@@ -387,17 +395,17 @@ export default function EditListingPage({ params }: PageProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-4 border-t border-border-gray pt-6 mt-4">
+        <div className="flex items-center justify-end gap-4 border-t border-border-gray/40 pt-6 mt-4">
           <Button
             type="button"
             variant="secondary"
             onClick={() => router.push("/host")}
             disabled={submitting}
-            className="px-6 font-semibold"
+            className="px-6 py-3 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md"
           >
             Cancel
           </Button>
-          <Button type="submit" variant="brand" isLoading={submitting} className="px-6 font-semibold shadow-xs">
+          <Button type="submit" variant="brand" isLoading={submitting} className="px-6 py-3 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md">
             Save Changes
           </Button>
         </div>

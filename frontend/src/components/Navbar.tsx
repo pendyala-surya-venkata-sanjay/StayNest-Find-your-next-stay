@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { Compass, Menu, User as UserIcon, Globe, Search } from "lucide-react";
+import { Menu, User as UserIcon, Globe, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
 import { LoginModal, RegisterModal } from "./AuthModals";
 import { SearchModal } from "./SearchModal";
+import { StayNestLogo } from "./StayNestLogo";
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -53,30 +54,27 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border-gray bg-white py-4 shadow-xs">
+      <header className="sticky top-0 z-40 w-full border-b border-border-gray bg-white/95 backdrop-blur-md py-4 shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-2 text-brand hover:opacity-90 transition-opacity">
-            <Compass size={32} className="stroke-[2]" />
-            <span className="hidden sm:inline text-xl font-bold tracking-tight text-brand">
-              StayNest
-            </span>
+          <Link href="/" className="flex items-center gap-2.5 text-brand hover:opacity-90 transition-opacity">
+            <StayNestLogo />
           </Link>
 
-          {/* Search Pill (Airbnb Style Mock) */}
-          <div
-            onClick={() => setSearchOpen(true)}
-            className="hidden md:flex items-center border border-border-gray hover:shadow-md transition-shadow rounded-full py-2 px-3 pl-6 gap-3 cursor-pointer shadow-xs bg-white"
-          >
-            <span className="text-xs font-semibold text-dark">Anywhere</span>
-            <span className="text-border-gray">|</span>
-            <span className="text-xs font-semibold text-dark">Any week</span>
-            <span className="text-border-gray">|</span>
-            <span className="text-xs text-muted">Add guests</span>
-            <div className="p-2 bg-brand text-white rounded-full">
-              <Search size={12} className="stroke-[3]" />
-            </div>
+          {/* Search Trigger and Explore Link */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/" className="text-xs font-bold text-dark hover:text-brand transition-colors tracking-wide uppercase">
+              Explore Stays
+            </Link>
+            <span className="text-border-gray font-light">|</span>
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-2.5 border border-border-gray hover:border-brand/60 transition-all rounded-xl py-2.5 px-4 text-xs font-semibold text-muted bg-[#FAF9F6] shadow-xs cursor-pointer"
+            >
+              <Search size={14} className="text-brand stroke-[2.5]" />
+              <span>Search destinations or stays...</span>
+            </button>
           </div>
 
           {/* User Menu Actions */}
@@ -87,38 +85,36 @@ export const Navbar: React.FC = () => {
               user.role === "host" ? (
                 <Link
                   href="/host"
-                  className="hidden md:block text-xs font-semibold hover:bg-light-gray py-2.5 px-4 rounded-full text-dark transition-colors"
+                  className="hidden md:block text-xs font-bold hover:bg-brand-light py-2.5 px-4 rounded-xl text-brand transition-colors border border-brand/20 hover:border-brand/40"
                 >
                   Host Dashboard
                 </Link>
               ) : (
                 <Link
                   href="/trips"
-                  className="hidden md:block text-xs font-semibold hover:bg-light-gray py-2.5 px-4 rounded-full text-dark transition-colors"
+                  className="hidden md:block text-xs font-bold hover:bg-brand-light py-2.5 px-4 rounded-xl text-brand transition-colors border border-brand/20 hover:border-brand/40"
                 >
                   My Trips
                 </Link>
               )
             ) : (
-              <button
-                onClick={openLogin}
-                className="hidden md:block text-xs font-semibold hover:bg-light-gray py-2.5 px-4 rounded-full text-dark transition-colors"
+              <Link
+                href="/login"
+                className="hidden md:block text-xs font-semibold hover:bg-light-gray py-2.5 px-4 rounded-xl text-dark transition-colors"
               >
                 Become a Host
-              </button>
-            )}
-
-            <button className="hidden sm:flex text-muted hover:bg-light-gray p-2.5 rounded-full transition-colors">
+              </Link>
+            )} <button className="hidden sm:flex text-muted hover:bg-light-gray p-2.5 rounded-xl transition-colors">
               <Globe size={16} />
             </button>
 
             {/* Profile Dropdown Trigger */}
             <button
               onClick={toggleDropdown}
-              className="flex items-center border border-border-gray hover:shadow-md transition-all rounded-full p-1.5 pl-3 gap-3 bg-white"
+              className="flex items-center border border-border-gray hover:border-brand/40 transition-all rounded-xl p-1.5 pl-3.5 gap-3 bg-white shadow-xs cursor-pointer"
             >
               <Menu size={16} className="text-dark" />
-              <div className="bg-muted text-white rounded-full p-1.5 w-7 h-7 flex items-center justify-center overflow-hidden">
+              <div className="bg-brand text-white rounded-full p-1.5 w-7 h-7 flex items-center justify-center overflow-hidden font-bold text-xs">
                 {user?.avatar_url ? (
                   <img
                     src={user.avatar_url}
@@ -126,7 +122,7 @@ export const Navbar: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <UserIcon size={14} />
+                  user ? user.name.charAt(0).toUpperCase() : <UserIcon size={14} />
                 )}
               </div>
             </button>
@@ -185,25 +181,28 @@ export const Navbar: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <button
-                      onClick={openRegister}
+                    <Link
+                      href="/register"
+                      onClick={() => setDropdownOpen(false)}
                       className="px-4 py-2 hover:bg-light-gray text-dark text-left font-semibold"
                     >
                       Sign up
-                    </button>
-                    <button
-                      onClick={openLogin}
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setDropdownOpen(false)}
                       className="px-4 py-2 hover:bg-light-gray text-dark text-left"
                     >
                       Log in
-                    </button>
+                    </Link>
                     <hr className="my-1 border-border-gray" />
-                    <button
-                      onClick={openLogin}
+                    <Link
+                      href="/register?role=host"
+                      onClick={() => setDropdownOpen(false)}
                       className="px-4 py-2 hover:bg-light-gray text-dark text-left"
                     >
                       Rent your home
-                    </button>
+                    </Link>
                     <button
                       onClick={() => setDropdownOpen(false)}
                       className="px-4 py-2 hover:bg-light-gray text-dark text-left"
